@@ -34,18 +34,50 @@ const fs = require("fs/promises");
 
     // Delete a file handler
     const deleteFileHandler = async (path) => {
-        console.log(`Deleting ${path}...`)
+        try {
+            await fs.unlink(path);
+            console.log(`The File ${path} has been deleted successfully`);
+        } catch (error) {
+            if (error.code === "ENOENT") {
+                console.log("No file at this path to remove.");
+            } else {
+                console.log("An error occurred while removing the file: ");
+                console.log(error);
+            }
+        }
     }
 
     // Rename a file handler
     const renameFileHandler = async (oldPath, newPath) => {
-        console.log(`Renaming ${oldPath} to ${newPath}`)
+        try {
+            await fs.rename(oldPath, newPath);
+            console.log(`The File ${oldPath} has been renamed to ${newPath} successfully`);
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                console.log("No file at this path to rename, or the destination doesn't exist.");
+            } else {
+                console.log("An error occurred while rename the file: ");
+                console.log(error);
+            }
+        }
     }
 
     // Add to a file handler
+    let createdFileContent = "";
     const addToFileHandler = async (path, content) => {
-        console.log(`Adding to ${path}... `)
-        console.log(`the content: ${content}...`)
+        try {
+            if (createdFileContent === content) {
+                return; // Avoid adding the same content multiple times
+            }
+            const fileHandle = await fs.open(path, "w"); // 'w' means open file for writing. The file is created (if it does not exist) or truncated (if it exists)
+            await fileHandle.write(content);
+            await fileHandle.close();
+            createdFileContent = content;
+            console.log(`The content has been added to the file ${path} successfully`)
+        } catch (error) {
+            console.log("An error occurred while removing the file: ");
+            console.log(error);
+        }
     }
 
     // Open the command.txt file
@@ -84,6 +116,7 @@ const fs = require("fs/promises");
 
         // Rename a file command:
         // rename a file <oldPath> to <newPath>
+        // e.g., rename a file file/test.txt to file/a-new-file-name.txt
         if (command.includes(RENAME_FILE)) {
             const _idx = command.indexOf(" to ");
             const oldPath = command.substring(RENAME_FILE.length + 1, _idx);
@@ -97,7 +130,7 @@ const fs = require("fs/promises");
             const _idx = command.indexOf(" this content: ");
             const filePath = command.substring(ADD_TO_FILE.length + 1, _idx);
             const content = command.substring(_idx + 15);
-            addToFileHandler(filePath, content);
+            await addToFileHandler(filePath, content);
         }
     })
 
