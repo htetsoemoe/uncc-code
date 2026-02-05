@@ -63,21 +63,37 @@ const fs = require("fs/promises");
     }
 
     // Add to a file handler
-    let createdFileContent = "";
+    const addToFileLocks = new Map();
     const addToFileHandler = async (path, content) => {
-        try {
-            if (createdFileContent === content) {
-                return; // Avoid adding the same content multiple times
+        const previous = addToFileLocks.get(path) || Promise.resolve();
+
+        const next = previous.then(async () => {
+            try {
+                let existingContent = "";
+                try {
+                    existingContent = await fs.readFile(path, "utf-8");
+                } catch (readError) {
+                    if (readError.code !== "ENOENT") {
+                        throw readError;
+                    }
+                }
+
+                if (existingContent.includes(content)) {
+                    return; // Avoid adding the same content multiple times
+                }
+
+                const fileHandle = await fs.open(path, "a"); // 'a' means open file for appending. The file is created (if it does not exist)
+                await fileHandle.write(content);
+                await fileHandle.close();
+                console.log(`The content has been added to the file ${path} successfully`)
+            } catch (error) {
+                console.log("An error occurred while removing the file: ");
+                console.log(error);
             }
-            const fileHandle = await fs.open(path, "w"); // 'w' means open file for writing. The file is created (if it does not exist) or truncated (if it exists)
-            await fileHandle.write(content);
-            await fileHandle.close();
-            createdFileContent = content;
-            console.log(`The content has been added to the file ${path} successfully`)
-        } catch (error) {
-            console.log("An error occurred while removing the file: ");
-            console.log(error);
-        }
+        });
+
+        addToFileLocks.set(path, next.catch(() => {}));
+        return next;
     }
 
     // Open the command.txt file
