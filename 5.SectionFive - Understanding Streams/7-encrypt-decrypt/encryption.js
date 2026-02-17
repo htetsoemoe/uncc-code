@@ -16,6 +16,12 @@ class Encrypt extends Transform {
     }
 }
 
+const clearLine = (dir) =>
+    new Promise((resolve) => process.stdout.clearLine(dir, resolve));
+
+const moveCursor = (dx, dy) =>
+    new Promise((resolve) => process.stdout.moveCursor(dx, dy, resolve));
+
 (async () => {
     const { size } = await fs.stat("input.txt");
     const readFileHandle = await fs.open("input.txt", "r");
@@ -23,24 +29,27 @@ class Encrypt extends Transform {
 
     const readStream = readFileHandle.createReadStream();
     const writeStream = writeFileHandle.createWriteStream();
-
     const encrypt = new Encrypt();
 
-    // Encryption progress with every 10 percent
     let processedBytes = 0;
-    let lastLoggedPercent = 0;
+    let lastLoggedPercent = -1;
 
-    readStream.on("data", (chunk) => {
+    readStream.on("data", async (chunk) => {
         processedBytes += chunk.length;
+
         const percent = Math.floor((processedBytes / size) * 100);
-        if (percent >= lastLoggedPercent + 10 || percent === 100) {
+
+        if (percent % 10 === 0 && percent !== lastLoggedPercent) {
             lastLoggedPercent = percent;
-            console.log(`Encryption progress: ${percent}%`);
+
+            await moveCursor(0, -1);
+            await clearLine(0);
+            process.stdout.write(`Encryption progress: ${percent}%`);
         }
     });
 
     writeStream.on("finish", () => {
-        console.log("Encryption completed");
+        console.log("\nEncryption completed\n");
     });
 
     // Using piping

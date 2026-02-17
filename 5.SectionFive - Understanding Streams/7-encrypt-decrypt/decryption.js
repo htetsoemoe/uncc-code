@@ -1,12 +1,9 @@
-// Technically, it is a Caesar cipher at byte level. Very weak decryption but
-// Perfect for learning streams
-
 const { Transform } = require("node:stream");
 const fs = require("node:fs/promises");
 
 class Decrypt extends Transform {
     _transform(chunk, encoding, callback) {
-        // <35 - 1, ff, a5 - 1, 12 - 1, 23 - 1....>
+        // <34 - 1, ff, a4 - 1, 11 - 1, 22 - 1....>
         for (let i = 0; i < chunk.length; ++i) {
             if (chunk[i] !== 255) {
                 chunk[i] = chunk[i] - 1;
@@ -16,6 +13,12 @@ class Decrypt extends Transform {
     }
 }
 
+const clearLine = (dir) =>
+    new Promise((resolve) => process.stdout.clearLine(dir, resolve));
+
+const moveCursor = (dx, dy) =>
+    new Promise((resolve) => process.stdout.moveCursor(dx, dy, resolve));
+
 (async () => {
     const { size } = await fs.stat("output.txt");
     const readFileHandle = await fs.open("output.txt", "r");
@@ -23,26 +26,28 @@ class Decrypt extends Transform {
 
     const readStream = readFileHandle.createReadStream();
     const writeStream = writeFileHandle.createWriteStream();
-
     const decrypt = new Decrypt();
 
-    // Decryption progress with every 10 percent
     let processedBytes = 0;
-    let lastLoggedPercent = 0;
+    let lastLoggedPercent = -1;
 
-    readStream.on("data", (chunk) => {
+    readStream.on("data", async (chunk) => {
         processedBytes += chunk.length;
+
         const percent = Math.floor((processedBytes / size) * 100);
-        if (percent >= lastLoggedPercent + 10 || percent === 100) {
+
+        if (percent % 10 === 0 && percent !== lastLoggedPercent) {
             lastLoggedPercent = percent;
-            console.log(`Decryption progress: ${percent}%`);
+
+            await moveCursor(0, -1);
+            await clearLine(0);
+            process.stdout.write(`Decryption progress: ${percent}%`);
         }
     });
 
     writeStream.on("finish", () => {
-        console.log("Decryption completed");
+        console.log("\nDecryption completed\n");
     });
 
-    // Using piping
     readStream.pipe(decrypt).pipe(writeStream);
 })();
