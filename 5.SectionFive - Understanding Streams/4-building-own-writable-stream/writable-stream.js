@@ -100,6 +100,10 @@ class FileWriteStream extends Writable {
             }
 
             // Backpressure: if stream.write returns false, stop the loop
+            /**
+             The return value is true if the internal buffer is less than the highWaterMark configured when the stream was created 
+             after admitting chunk. If false is returned, further attempts to write data to the stream should stop until the 'drain' event is emitted.
+            */
             if (!stream.write(buff)) break;
 
             i++;
