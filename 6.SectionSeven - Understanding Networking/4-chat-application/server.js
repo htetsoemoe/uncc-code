@@ -33,7 +33,7 @@ function gracefulShutdown() {
     });
 
     // 2. Tell all current clients to end
-    for (const socket of sockets) {
+    for (const socket of clients) {
         socket.end(); // Sends the FIN packet (clean close)
     }
 }
