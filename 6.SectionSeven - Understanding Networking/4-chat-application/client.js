@@ -30,14 +30,22 @@ const socket = net.createConnection(
         console.log(`Connected to the server!`)
 
         const ask = async () => {
-            const message = await rl.question("Enter a message > ")
+            try {
+                const message = await rl.question("Enter a message > ")
 
-            // move the cursor one line up
-            await moveCursor(0, -1)
+                // move the cursor one line up
+                await moveCursor(0, -1)
 
-            // clear the current line that the cursor is in
-            await clearLine(0)
-            socket.write(`${id}-message-${message}`)
+                // clear the current line that the cursor is in
+                await clearLine(0)
+                socket.write(`${id}-message-${message}`)
+            } catch (err) {
+                if (err.code === 'ABORT_ERR') {
+                    // This happens when Ctrl+C is pressed. No need to crash.
+                    return;
+                }
+                console.error("An error occurred during question:", err.message);
+            }
         }
 
         ask()
@@ -59,7 +67,7 @@ const socket = net.createConnection(
                 console.log(`Your id id ${id}\n`)
             } else {
                 // When we are getting a message...
-                console.log(data.toString("utf-8"))   
+                console.log(data.toString("utf-8"))
             }
 
             ask()
@@ -71,7 +79,7 @@ const socket = net.createConnection(
 // client.on("error") triggers when the connection is severed unexpectedly (RST packet (Reset)).
 // Abrupt (Your Error): Server process dies -> Sends RST -> Client throws ECONNRESET.
 socket.on("error", (err) => {
-    if (err.code === "ECCONNRESET") {
+    if (err.code === "ECONNRESET") {
         console.log("Server closed the connection abruptly.")
     } else {
         console.log("A client error occurred ", err.message)

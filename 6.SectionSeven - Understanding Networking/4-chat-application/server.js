@@ -20,6 +20,33 @@ server.on("connection", (socket) => {
         })
     })
 
+    // Broadcasting a message to everyone when someone leave
+    socket.on("end", () => {
+        const index = clients.findIndex(c => c.socket === socket)
+        if (index !== -1) {
+            clients.splice(index, 1)
+        }
+        clients.map((client) => {
+            client.socket.write(`User ${clientId} left!`)
+        })
+    })
+
+    socket.on("error", (err) => {
+        if (err.code === "ECONNRESET") {
+            console.log(`User ${clientId} connection was reset abruptly.`)
+        } else {
+            console.error(`Socket error for User ${clientId}:`, err.message)
+        }
+        // Cleanup on error as well
+        const index = clients.findIndex(c => c.socket === socket)
+        if (index !== -1) {
+            clients.splice(index, 1)
+        }
+        clients.map((client) => {
+            client.socket.write(`User ${clientId} disconnected abruptly!`)
+        })
+    })
+
     clients.push({ id: clientId.toString(), socket })
 })
 
