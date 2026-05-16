@@ -1,0 +1,17 @@
+{
+  "name": "14.clustering-in-action",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "cluster": "node cluster.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cpeak": "^1.4.0"
+  }
+}
