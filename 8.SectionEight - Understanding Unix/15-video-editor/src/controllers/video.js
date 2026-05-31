@@ -7,16 +7,13 @@ const DB = require("../DB");
 const FF = require("../../lib/FF"); // ffmpeg utilities functions
 
 const getVideos = (req, res, handleErr) => {
-    const name = req.params.get("name")
+    DB.update();
+    const videos = DB.videos.filter((video) => {
+        return video.userId === req.userId;
+    });
+    // console.log(videos);
 
-    if (name) {
-        res.json({ message: `Your name is ${name}` })
-    } else {
-        return handleErr({
-            status: 400,
-            message: "Please specify a name"
-        })
-    }
+    res.status(200).json(videos);
 }
 
 // Upload a video file route: a generated folder with unique ID which has a uploaded video with generated video name is original.mp4, thumbnail.jpg
