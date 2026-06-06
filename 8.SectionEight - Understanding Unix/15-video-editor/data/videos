@@ -9,7 +9,7 @@
             "height": 720
         },
         "userId": 1,
-        "extractedAudio": false,
+        "extractedAudio": true,
         "resizes": {}
     }
 ]

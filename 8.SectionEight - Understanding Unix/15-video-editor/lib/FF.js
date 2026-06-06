@@ -1,5 +1,6 @@
 const { spawn } = require("node:child_process");
 
+// Make a thumbnail for uploaded video
 const makeThumbnail = (fullPath, thumbnailPath) => {
     // ffmpeg -i video.mp4 -ss 5 -vframes 1 thumbnail.jpg
     return new Promise((resolve, reject) => {
@@ -27,6 +28,7 @@ const makeThumbnail = (fullPath, thumbnailPath) => {
     });
 };
 
+// Get dimensions for uploaded video
 const getDimensions = (fullPath) => {
     // ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 video.mp4
     return new Promise((resolve, reject) => {
@@ -66,4 +68,32 @@ const getDimensions = (fullPath) => {
     });
 };
 
-module.exports = { makeThumbnail, getDimensions };
+// Extract the audio for a video file
+const extractAudio = (originalVideoPath, targetAudioPath) => {
+    return new Promise((resolve, reject) => {
+        // Extract audio from video
+        // ffmpeg -i video.mp4 -vn -c:a copy audio.aac
+        const ffmpeg = spawn("ffmpeg", [
+            "-i",
+            originalVideoPath,
+            "-vn",
+            "-c:a",
+            "copy",
+            targetAudioPath,
+        ]);
+
+        ffmpeg.on("close", (code) => {
+            if (code === 0) {
+                resolve();
+            } else {
+                reject(`FFmpeg existed with this code: ${code}`);
+            }
+        });
+
+        ffmpeg.on("error", (err) => {
+            reject(err);
+        });
+    });
+}
+
+module.exports = { makeThumbnail, getDimensions, extractAudio };
