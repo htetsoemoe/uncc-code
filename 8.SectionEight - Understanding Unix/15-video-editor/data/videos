@@ -1,1 +1,15 @@
-[]
+[
+    {
+        "id": 0,
+        "videoId": "86a03373",
+        "name": "NorNaw",
+        "extension": "mp4",
+        "dimensions": {
+            "width": 1280,
+            "height": 720
+        },
+        "userId": 1,
+        "extractedAudio": false,
+        "resizes": {}
+    }
+]

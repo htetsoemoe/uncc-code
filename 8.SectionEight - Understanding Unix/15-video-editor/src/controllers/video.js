@@ -76,9 +76,84 @@ const uploadVideo = async (req, res, handleErr) => {
     }
 }
 
+// Return a video asset to the client
+// http://localhost:3500/get-video-asset?videoId=86a03373&type=original
+const getVideoAsset = async (req, res, handleErr) => {
+    const videoId = req.params.get("videoId");
+    const type = req.params.get("type"); // thumbnail, original, audio, resize
+
+    DB.update();
+    const video = DB.videos.find((video) => video.videoId === videoId);
+
+    if (!video) {
+        return handleErr({
+            status: 404,
+            message: "Video not found!",
+        });
+    }
+
+    let file;
+    let mimeType;
+    let filename; // the final file name for the download (including the extension)
+
+    switch (type) {
+        case "thumbnail":
+            file = await fs.open(`./storage/${videoId}/thumbnail.jpg`, "r");
+            mimeType = "image/jpeg";
+            break;
+        case "audio":
+            file = await fs.open(`./storage/${videoId}/audio.aac`, "r");
+            mimeType = "audio/aac";
+            filename = `${video.name}-audio.aac`;
+            break;
+        case "resize":
+            const dimensions = req.params.get("dimensions");
+            file = await fs.open(
+                `./storage/${videoId}/${dimensions}.${video.extension}`,
+                "r"
+            );
+            mimeType = "video/mp4"; // Not a good practice! Videos are not always MP4
+            filename = `${video.name}-${dimensions}.${video.extension}`;
+            break;
+        case "original":
+            file = await fs.open(
+                `./storage/${videoId}/original.${video.extension}`,
+                "r"
+            );
+            mimeType = "video/mp4"; // Not a good practice! Videos are not always MP4
+            filename = `${video.name}.${video.extension}`;
+            break;
+    }
+
+    try {
+        // Grab the file size
+        const stat = await file.stat();
+        // Create Read Stream
+        const fileStream = file.createReadStream();
+
+        if (type !== "thumbnail") {
+            // Set a header to prompt for download
+            res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+        }
+
+        // Set the Content-Type header based on the file type
+        res.setHeader("Content-Type", mimeType);
+        // Set the Content-Length to the size of the file
+        res.setHeader("Content-Length", stat.size);
+
+        res.status(200);
+
+        await pipeline(fileStream, res);
+        file.close();
+    } catch (e) {
+        console.log(e);
+    }
+}
+
 const controller = {
     getVideos,
     uploadVideo,
+    getVideoAsset,
 }
 
 module.exports = controller
