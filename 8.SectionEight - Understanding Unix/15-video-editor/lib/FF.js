@@ -96,4 +96,31 @@ const extractAudio = (originalVideoPath, targetAudioPath) => {
     });
 }
 
-module.exports = { makeThumbnail, getDimensions, extractAudio };
+const resize = (originalVideoPath, targetVideoPath, width, height) => {
+    return new Promise((resolve, reject) => {
+        // ffmpeg -i video.mp4 -vf scale=320:240 -c:a copy video-320x240.mp4
+        const ffmpeg = spawn("ffmpeg", [
+            "-i",
+            originalVideoPath,
+            "-vf",
+            `scale=${width}x${height}`,
+            "-c:a",
+            "copy",
+            targetVideoPath,
+        ]);
+
+        ffmpeg.on("close", (code) => {
+            if (code === 0) {
+                resolve();
+            } else {
+                reject(`FFmpeg existed with this code: ${code}`);
+            }
+        });
+
+        ffmpeg.on("error", (err) => {
+            reject(err);
+        });
+    });
+};
+
+module.exports = { makeThumbnail, getDimensions, extractAudio, resize };

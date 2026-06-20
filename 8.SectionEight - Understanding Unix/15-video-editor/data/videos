@@ -1,7 +1,7 @@
 [
     {
         "id": 0,
-        "videoId": "86a03373",
+        "videoId": "d343bb92",
         "name": "NorNaw",
         "extension": "mp4",
         "dimensions": {
@@ -9,7 +9,11 @@
             "height": 720
         },
         "userId": 1,
-        "extractedAudio": true,
-        "resizes": {}
+        "extractedAudio": false,
+        "resizes": {
+            "320x240": {
+                "processing": false
+            }
+        }
     }
 ]
