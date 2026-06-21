@@ -106,6 +106,11 @@ const resize = (originalVideoPath, targetVideoPath, width, height) => {
             `scale=${width}x${height}`,
             "-c:a",
             "copy",
+            "-threads",
+            "2",
+            "-loglevel",
+            "error",
+            "-y",
             targetVideoPath,
         ]);
 
