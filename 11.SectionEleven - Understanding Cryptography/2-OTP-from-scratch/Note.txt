@@ -1,0 +1,5 @@
+One-Time Pad
+
+1. Key length must equal message length
+2. Key must be truly random
+3. Key must be used only once and destroy
