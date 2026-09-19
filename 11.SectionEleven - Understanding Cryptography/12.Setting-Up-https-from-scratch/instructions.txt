@@ -1,0 +1,63 @@
+These are instructions on how to make your system trust a Root CA, and update your DNS on Windows, Linux & Mac: 
+
+------------------------------------- For Windows -------------------------------------
+  Updating DNS:
+    1- Open Notepad as Administrator:
+      Press "Start", type "Notepad", then: Right-click → Run as administrator.
+    2- In Notepad: Click File → Open
+    3- Navigate to: C:\Windows\System32\drivers\etc\
+    4- Change File type from "Text Documents (*.txt)" to "All Files (.)".
+    5- Select the file named "hosts" and click open.
+    6- Add the domain and your machine's IP address like this to the file and save and exit:
+      127.0.0.1 www.facebook.com
+      127.0.0.1 facebook.com
+
+  Adding or trusting a certificate:
+    1- Open PowerShell as administrator and run: certutil -addstore "Root" .\UNCC-cert.pem
+
+  Removing or distrusting a certificate:
+    1- Open PowerShell as administrator and run: certutil -store "Root"
+    2- Find the UNCC certificate and copy the "Cert Hash" value.
+    3- Run: certutil -delstore "Root" <Cert Hash>
+
+  You can also handle the certificates using GUI by searching for "Manage User Certificates" in the start menu. You can easily google to get the instructions for this.
+---------------------------------------------------------------------------------------
+
+
+------------------------------ For Linux (Debian/Ubuntu) ------------------------------
+  Updating DNS:
+    1- Open /etc/hosts file as sudo in your text editor.
+    2- Add the domain and your machine's IP address like this to the file and save and exit:
+      127.0.0.1 www.facebook.com
+      127.0.0.1 facebook.com
+
+  Adding or trusting a certificate:
+    1- Make sure the format is .crt first by running: cp UNCC-cert.pem UNCC-cert.crt
+    2- Copy the cert to the certificates folder by running: sudo cp UNCC-cert.crt /usr/local/share/ca-certificates/
+    3- Update the CA certificates by running: sudo update-ca-certificates
+
+  Removing or distrusting a certificate:
+    1- Remove the cert you just added by running: sudo rm /usr/local/share/ca-certificates/UNCC-cert.crt
+    2- Update the CA trust store: sudo update-ca-certificates --fresh
+    3- Confirm that it's gone by running: ls -l /etc/ssl/certs | grep UNCC
+       The command shouldn't return anything.
+---------------------------------------------------------------------------------------
+
+
+---------------------------------------- For Mac --------------------------------------
+  Updating DNS:
+    1- Open /etc/hosts file as sudo in your text editor.
+    2- Add the domain and your machine's IP address like this:
+      127.0.0.1 www.facebook.com
+      127.0.0.1 facebook.com
+
+  Adding or trusting a certificate:
+    1- Hit "command + space" and then search and open "Keychain Access".
+    2- Select "System" from the left side bar.
+    3- Drag and drop your CA certificate.
+    4- Double click on it, expand the "Trust" section, and choose "Always Trust" for "When using this certificate".
+
+    To remove it, simply select the certificate, and right-click and choose "Delete".
+    And to distrust, set the "When using this certificate" in the "Trust" section to "Never Trust".
+---------------------------------------------------------------------------------------
+

@@ -1,0 +1,10 @@
+[ req ]
+distinguished_name = dn
+req_extensions     = ext
+prompt             = no
+
+[ dn ]
+CN = *.facebook.com
+
+[ ext ]
+subjectAltName = DNS:*.facebook.com, DNS:facebook.com
